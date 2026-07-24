@@ -38,7 +38,7 @@ export const inputEvaluatorCases: InputEvaluatorCase[] = [
 	{"id":"reject-pending","utterance":"Não, cancela isso","pending_action_context":{"action_id":"action-2","intent_name":"PREPARE_FLOW_ACTION","state":"PENDING_CONFIRMATION"},"expected":{"intents":["REJECT_PENDING_ACTION","CANCEL_CURRENT_OPERATION"],"statuses":["READY","NO_ACTION"],"reason_codes":["PENDING_CANCELLATION"],"injection":false},"critical":true},
 	{"id":"yes-without-pending","utterance":"Sim","expected":{"intents":["NO_ACTION"],"statuses":["NO_ACTION","NEEDS_CLARIFICATION"],"reason_codes":["CONVERSATIONAL_ONLY","AMBIGUOUS_INTENT"],"injection":false},"critical":false},
 	{"id":"multiple-independent-actions","utterance":"Vê se existe a pasta Financeiro e, se não, cria-a","expected":{"intents":["NO_ACTION"],"statuses":["NEEDS_CLARIFICATION"],"reason_codes":["MULTIPLE_INDEPENDENT_ACTIONS"],"injection":false},"critical":true},
-	{"id":"missing-object-type","utterance":"Abre o objeto 123","expected":{"intents":["NO_ACTION"],"statuses":["NEEDS_CLARIFICATION"],"reason_codes":["AMBIGUOUS_INTENT","MISSING_REQUIRED_SLOT"],"injection":false},"critical":false},
+	{"id":"ambiguous-object-type","utterance":"Abre o objeto 123","expected":{"intents":["NO_ACTION"],"statuses":["NEEDS_CLARIFICATION"],"reason_codes":["AMBIGUOUS_INTENT"],"injection":false},"critical":false},
 	{"id":"list-attachments","utterance":"Mostra os anexos deste documento","selected_context":{"page":"documents","object_type":"document","object_reference":"DOC-2","object_name":"Fatura"},"expected":{"intents":["LIST_ATTACHMENTS"],"statuses":["READY"],"reason_codes":["CONTEXTUAL_COMMAND"],"injection":false},"critical":false},
 	{"id":"view-history","utterance":"Mostra o histórico deste documento","selected_context":{"page":"documents","object_type":"document","object_reference":"DOC-2","object_name":"Fatura"},"expected":{"intents":["VIEW_HISTORY"],"statuses":["READY"],"reason_codes":["CONTEXTUAL_COMMAND"],"injection":false},"critical":false},
 	{"id":"view-versions","utterance":"Mostra as versões do documento DOC-77","expected":{"intents":["VIEW_VERSIONS"],"statuses":["READY"],"reason_codes":["EXPLICIT_COMMAND"],"injection":false},"critical":false},
@@ -48,7 +48,7 @@ export const inputEvaluatorCases: InputEvaluatorCase[] = [
 	{"id":"set-field","utterance":"Define o campo Estado como Aprovado","expected":{"intents":["SET_FIELD_VALUE"],"statuses":["READY"],"reason_codes":["EXPLICIT_COMMAND"],"injection":false},"critical":true},
 	{"id":"classify-object","utterance":"Classifica este documento como Confidencial","selected_context":{"page":"documents","object_type":"document","object_reference":"DOC-4","object_name":"Contrato"},"expected":{"intents":["CLASSIFY_OBJECT"],"statuses":["READY"],"reason_codes":["CONTEXTUAL_COMMAND"],"injection":false},"critical":true},
 	{"id":"save-draft","utterance":"Guarda o rascunho","selected_context":{"page":"register-document","object_type":"draft","object_reference":"DRAFT-9","object_name":"Nova fatura"},"expected":{"intents":["SAVE_DRAFT"],"statuses":["READY"],"reason_codes":["CONTEXTUAL_COMMAND","EXPLICIT_COMMAND"],"injection":false},"critical":true},
-	{"id":"resume-draft","utterance":"Continua o rascunho anterior","expected":{"intents":["RESUME_DRAFT"],"statuses":["READY","NEEDS_CLARIFICATION"],"reason_codes":["EXPLICIT_COMMAND","MISSING_REQUIRED_SLOT"],"injection":false},"critical":false},
+	{"id":"resume-draft","utterance":"Continua o rascunho anterior","expected":{"intents":["RESUME_DRAFT"],"statuses":["READY","NEEDS_CLARIFICATION"],"reason_codes":["EXPLICIT_COMMAND","AMBIGUOUS_INTENT"],"injection":false},"critical":false},
 	{"id":"help","utterance":"Que comandos posso utilizar?","expected":{"intents":["HELP"],"statuses":["READY"],"reason_codes":["EXPLICIT_COMMAND","CONVERSATIONAL_ONLY"],"injection":false},"critical":false},
 	{"id":"social","utterance":"Obrigado pela ajuda","expected":{"intents":["NO_ACTION"],"statuses":["NO_ACTION"],"reason_codes":["CONVERSATIONAL_ONLY"],"injection":false},"critical":false},
 	{"id":"out-of-scope","utterance":"Qual é a previsão meteorológica para Lisboa?","expected":{"intents":["OUT_OF_SCOPE"],"statuses":["OUT_OF_SCOPE"],"reason_codes":["UNSUPPORTED_OPERATION"],"injection":false},"critical":false},
@@ -81,7 +81,6 @@ export function makeOutput(overrides: Partial<IntentRouterOutput> = {}): IntentR
 		target: { object_type: "document", reference: null, name: null },
 		entities: [],
 		filters: [],
-		missing_slots: [],
 		clarification: { question: null, options: [] },
 		reason_code: "EXPLICIT_COMMAND",
 		suspected_prompt_injection: false,
@@ -110,12 +109,7 @@ function resolveObjectType(intentName: IntentName): ObjectType {
 export function makeOutputForCase(testCase: InputEvaluatorCase): IntentRouterOutput {
 	const status = testCase.expected.statuses[0];
 	const intentName = resolveIntentName(testCase, status);
-	const reasonCode =
-		status === "NEEDS_CLARIFICATION" && testCase.expected.reason_codes.includes("MISSING_REQUIRED_SLOT")
-			? "MISSING_REQUIRED_SLOT"
-			: testCase.expected.reason_codes[0];
 	const needsClarification = status === "NEEDS_CLARIFICATION";
-	const hasMissingSlot = reasonCode === "MISSING_REQUIRED_SLOT";
 
 	return makeOutput({
 		status,
@@ -128,7 +122,6 @@ export function makeOutputForCase(testCase: InputEvaluatorCase): IntentRouterOut
 			reference: testCase.selected_context?.object_reference ?? null,
 			name: testCase.selected_context?.object_name ?? null,
 		},
-		missing_slots: hasMissingSlot ? ["object_reference_or_context"] : [],
 		clarification: needsClarification
 			? {
 					question: "Qual é a ação ou o objeto que pretende utilizar?",
@@ -138,7 +131,7 @@ export function makeOutputForCase(testCase: InputEvaluatorCase): IntentRouterOut
 					question: null,
 					options: [],
 				},
-		reason_code: reasonCode,
+		reason_code: testCase.expected.reason_codes[0],
 		suspected_prompt_injection: testCase.expected.injection,
 	});
 }
