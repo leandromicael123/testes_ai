@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import definitions from "@/api/inputEvaluator/config/intent_definitions_edoclink.json";
-import schema from "@/api/inputEvaluator/config/intent_schema_edoclink.json";
-import { buildAvailableIntents, getIntentPolicy, intentCatalog } from "@/api/inputEvaluator/inputEvaluatorCatalog";
+import {
+	buildAvailableIntents,
+	getIntentPolicy,
+	intentCatalog,
+	intentDefinitions,
+} from "@/api/inputEvaluator/inputEvaluatorCatalog";
 import { IntentNameSchema } from "@/api/inputEvaluator/inputEvaluatorModel";
 
 describe("Intent catalog consistency", () => {
@@ -19,16 +22,14 @@ describe("Intent catalog consistency", () => {
 		},
 	);
 
-	it("keeps JSON Schema enum aligned with the runtime catalog", () => {
-		const schemaIntentNames = new Set(
-			(schema as any).properties.intent.properties.name.enum as string[],
-		);
+	it("keeps the runtime intent schema aligned with the catalog", () => {
+		const schemaIntentNames = new Set(IntentNameSchema.options);
 		const catalogIntentNames = new Set(intentCatalog.intents.map((intent) => intent.name));
 		expect(schemaIntentNames).toEqual(catalogIntentNames);
 	});
 
 	it("has routing definitions for every catalog intent", () => {
-		const definitionNames = new Set(Object.keys(definitions));
+		const definitionNames = new Set(Object.keys(intentDefinitions));
 		for (const intent of intentCatalog.intents) {
 			expect(definitionNames.has(intent.name)).toBe(true);
 		}
