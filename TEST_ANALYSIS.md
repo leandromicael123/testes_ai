@@ -12,16 +12,18 @@ Foram analisados os padrões dos testes existentes do `edoclink-ai`:
 O módulo inclui:
 
 1. `inputEvaluatorModel.test.ts` — pedidos, output estrito, limites de confiança e regras de clarificação;
-2. `inputEvaluatorCatalog.test.ts` — sincronização dinâmica entre catálogo, JSON Schema e definições;
+2. `inputEvaluatorCatalog.test.ts` — sincronização entre o catálogo TypeScript, as definições e o schema Zod;
 3. `inputEvaluatorPromptContract.test.ts` — regras essenciais do prompt de produção;
 4. `inputEvaluatorRepository.test.ts` — catálogo injetado pelo servidor, parsing estrito e rejeição de campos de política gerados pelo modelo;
 5. `inputEvaluatorService.test.ts` — sucesso e falha do serviço;
 6. `inputEvaluatorController.test.ts` — respostas HTTP do controller;
-7. `inputEvaluatorRouter.test.ts` — validação do endpoint com Supertest;
+7. `inputEvaluatorEndpoint.e2e.test.ts` — validação do endpoint com Express e Supertest;
 8. `inputEvaluatorCases.test.ts` — qualidade e cobertura do dataset;
 9. `inputEvaluatorClassification.live.test.ts` — benchmark real, orientado por JSON, com accuracy, falhas críticas e matriz de confusão.
 
-Os casos semânticos ficam em `src/api/inputEvaluator/__tests__/fixtures/inputEvaluatorCases.json`. Para adicionar um teste, basta acrescentar um objeto JSON; não é necessário alterar o código do benchmark.
+Os casos semânticos ficam em `src/api/inputEvaluator/__tests__/inputEvaluatorCases.json`. Para adicionar um teste, basta acrescentar um objeto JSON; não é necessário alterar o código do benchmark.
+
+O catálogo e as definições ficam em `inputEvaluatorCatalog.ts`, o prompt em `inputEvaluatorPrompt.ts` e os schemas em `inputEvaluatorModel.ts`. Não existe uma pasta `config` no módulo.
 
 O benchmark live é configurável por variáveis de ambiente:
 
@@ -30,4 +32,4 @@ O benchmark live é configurável por variáveis de ambiente:
 - `INPUT_EVALUATOR_CASE_FILTER` filtra por ID;
 - `INPUT_EVALUATOR_MAX_CASES` limita o número de casos e o custo.
 
-A verificação TypeScript isolada do módulo foi executada sem erros no código preparado para integração. Os testes completos devem ser executados no ambiente local do projeto, com as dependências e o `.env` válidos.
+Os testes completos devem ser executados no ambiente local do projeto, com as dependências e o `.env` válidos.
