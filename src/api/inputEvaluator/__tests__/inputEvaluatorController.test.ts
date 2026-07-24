@@ -1,21 +1,29 @@
 import { StatusCodes } from "http-status-codes";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockEvaluate } = vi.hoisted(() => ({ mockEvaluate: vi.fn() }));
-
-vi.mock("@/api/inputEvaluator/inputEvaluatorService", () => ({
-	inputEvaluatorService: { evaluate: mockEvaluate },
+const { mockServiceEvaluate } = vi.hoisted(() => ({
+	mockServiceEvaluate: vi.fn(),
 }));
 
+vi.mock("@/api/inputEvaluator/inputEvaluatorService", () => ({
+	inputEvaluatorService: { evaluate: mockServiceEvaluate },
+}));
+
+import {
+	inputEvaluatorCases,
+	makeOutputForCase,
+	makeRequest,
+} from "@/api/inputEvaluator/__tests__/inputEvaluatorTestUtils";
 import { inputEvaluatorController } from "@/api/inputEvaluator/inputEvaluatorController";
 import { ServiceResponse } from "@/common/models/serviceResponse";
-import { inputEvaluatorCases, makeOutput, makeRequest } from "@/api/inputEvaluator/__tests__/inputEvaluatorTestUtils";
 
 describe("InputEvaluatorController", () => {
-	beforeEach(() => mockEvaluate.mockReset());
+	beforeEach(() => {
+		mockServiceEvaluate.mockReset();
+	});
 
-	function makeReqRes() {
-		const req = { body: makeRequest(inputEvaluatorCases[0]) } as any;
+	function makeReqRes(body: unknown) {
+		const req = { body } as any;
 		const res = {
 			status: vi.fn().mockReturnThis(),
 			send: vi.fn().mockReturnThis(),
@@ -24,22 +32,39 @@ describe("InputEvaluatorController", () => {
 		return { req, res };
 	}
 
-	it("returns the router result on success", async () => {
-		const output = makeOutput();
-		mockEvaluate.mockResolvedValue(ServiceResponse.success("ok", output));
-		const { req, res } = makeReqRes();
-		await inputEvaluatorController.evaluate(req, res, vi.fn());
-		expect(mockEvaluate).toHaveBeenCalledWith(req.body);
-		expect(res.status).toHaveBeenCalledWith(StatusCodes.OK);
-		expect(res.send).toHaveBeenCalledWith(output);
-	});
+	it.each(inputEvaluatorCases.map((testCase) => [testCase.id, testCase] as const))(
+		"returns 200 and the router payload for case %s",
+		async (_id, testCase) => {
+			// Arrange
+			const request = makeRequest(testCase);
+			const expectedPayload = makeOutputForCase(testCase);
+			mockServiceEvaluate.mockResolvedValue(ServiceResponse.success("ok", expectedPayload));
+			const { req, res } = makeReqRes(request);
+
+			// Act
+			await inputEvaluatorController.evaluate(req, res, vi.fn());
+
+			// Assert
+			expect(mockServiceEvaluate).toHaveBeenCalledTimes(1);
+			expect(mockServiceEvaluate).toHaveBeenCalledWith(request);
+			expect(res.status).toHaveBeenCalledWith(StatusCodes.OK);
+			expect(res.send).toHaveBeenCalledWith(expectedPayload);
+		},
+	);
 
 	it("returns the service error without fabricating a classification", async () => {
-		mockEvaluate.mockResolvedValue(
+		// Arrange
+		const request = makeRequest(inputEvaluatorCases[0]);
+		mockServiceEvaluate.mockResolvedValue(
 			ServiceResponse.failure("failed", null, StatusCodes.INTERNAL_SERVER_ERROR),
 		);
-		const { req, res } = makeReqRes();
+		const { req, res } = makeReqRes(request);
+
+		// Act
 		await inputEvaluatorController.evaluate(req, res, vi.fn());
+
+		// Assert
+		expect(mockServiceEvaluate).toHaveBeenCalledWith(request);
 		expect(res.status).toHaveBeenCalledWith(StatusCodes.INTERNAL_SERVER_ERROR);
 		expect(res.json).toHaveBeenCalledWith({ success: false, message: "failed", details: undefined });
 	});
