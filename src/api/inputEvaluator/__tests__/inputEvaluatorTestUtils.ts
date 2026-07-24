@@ -64,10 +64,12 @@ function resolveIntentName(testCase: InputEvaluatorCase, status: IntentStatus): 
 }
 
 function resolveObjectType(intentName: IntentName): ObjectType {
+	if (intentName === "CREATE_DOCUMENT_DRAFT") return "document";
+	if (intentName === "CREATE_FOLDER_DRAFT") return "folder";
+	if (intentName === "SAVE_DRAFT" || intentName === "RESUME_DRAFT") return "draft";
 	if (intentName.includes("FOLDER")) return "folder";
 	if (intentName.includes("FLOW")) return "flow";
 	if (intentName.includes("TASK")) return "task";
-	if (intentName.includes("DRAFT")) return "draft";
 	if (intentName === "READ_VISIBLE_CONTENT" || intentName === "CONTROL_READING") return "current_view";
 	if (intentName === "NO_ACTION" || intentName === "HELP" || intentName === "OUT_OF_SCOPE") return "none";
 	return "document";
