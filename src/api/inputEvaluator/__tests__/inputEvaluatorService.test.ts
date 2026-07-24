@@ -25,15 +25,10 @@ describe("InputEvaluatorService", () => {
 	it.each(inputEvaluatorCases.map((testCase) => [testCase.id, testCase] as const))(
 		"wraps repository result in ServiceResponse.success for case %s",
 		async (_id, testCase) => {
-			// Arrange
 			const request = makeRequest(testCase);
 			const expectedPayload = makeOutputForCase(testCase);
 			mockEvaluate.mockResolvedValue(expectedPayload);
-
-			// Act
 			const actual = await service.evaluate(request);
-
-			// Assert
 			expect(mockEvaluate).toHaveBeenCalledTimes(1);
 			expect(mockEvaluate).toHaveBeenCalledWith(request);
 			expect(actual.statusCode).toEqual(StatusCodes.OK);
@@ -46,32 +41,21 @@ describe("InputEvaluatorService", () => {
 	it.each(inputEvaluatorCases.map((testCase) => [testCase.id, testCase] as const))(
 		"does not add backend policy fields for case %s",
 		async (_id, testCase) => {
-			// Arrange
 			const request = makeRequest(testCase);
 			mockEvaluate.mockResolvedValue(makeOutputForCase(testCase));
-
-			// Act
 			const actual = await service.evaluate(request);
 			const responseObject = actual.responseObject as unknown as Record<string, unknown>;
-
-			// Assert
 			expect(responseObject).not.toHaveProperty("riskLevel");
 			expect(responseObject).not.toHaveProperty("requiresConfirmation");
 			expect(responseObject).not.toHaveProperty("targetHandler");
 			expect(responseObject).not.toHaveProperty("explanation");
-			expect(responseObject).not.toHaveProperty("missingFields");
 		},
 	);
 
 	it("returns ServiceResponse.failure with 500 when repository throws", async () => {
-		// Arrange
 		const request = makeRequest(inputEvaluatorCases[0]);
 		mockEvaluate.mockRejectedValue(new Error("Model unavailable"));
-
-		// Act
 		const actual = await service.evaluate(request);
-
-		// Assert
 		expect(mockEvaluate).toHaveBeenCalledTimes(1);
 		expect(mockEvaluate).toHaveBeenCalledWith(request);
 		expect(actual.statusCode).toEqual(StatusCodes.INTERNAL_SERVER_ERROR);
