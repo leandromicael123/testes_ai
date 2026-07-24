@@ -3,14 +3,17 @@ import express, { type Router } from "express";
 
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import { inputEvaluatorController } from "@/api/inputEvaluator/inputEvaluatorController";
-import { InputEvaluationResultSchema, InputEvaluatorRequestSchema } from "@/api/inputEvaluator/inputEvaluatorModel";
+import {
+	InputEvaluatorRequestSchema,
+	IntentRouterOutputSchema,
+} from "@/api/inputEvaluator/inputEvaluatorModel";
 import { validateRequest } from "@/common/utils/httpHandlers";
 
 export const inputEvaluatorRegistry = new OpenAPIRegistry();
 export const inputEvaluatorRouter: Router = express.Router();
 
 inputEvaluatorRegistry.register("InputEvaluatorRequest", InputEvaluatorRequestSchema);
-inputEvaluatorRegistry.register("InputEvaluationResult", InputEvaluationResultSchema);
+inputEvaluatorRegistry.register("IntentRouterOutput", IntentRouterOutputSchema);
 
 inputEvaluatorRegistry.registerPath({
 	method: "post",
@@ -25,7 +28,7 @@ inputEvaluatorRegistry.registerPath({
 			},
 		},
 	},
-	responses: createApiResponse(InputEvaluationResultSchema, "Input evaluation result"),
+	responses: createApiResponse(IntentRouterOutputSchema, "Intent routing result"),
 });
 
 inputEvaluatorRouter.post("/", validateRequest(InputEvaluatorRequestSchema), inputEvaluatorController.evaluate);
