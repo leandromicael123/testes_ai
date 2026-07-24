@@ -26,7 +26,7 @@ src/api/inputEvaluator/
     └── inputEvaluatorTestUtils.ts
 ```
 
-O catálogo e os `required_slots` estão em `inputEvaluatorCatalog.ts`. O prompt está em `inputEvaluatorPrompt.ts` e os schemas Zod em `inputEvaluatorModel.ts`.
+O catálogo e os exemplos das intenções estão em `inputEvaluatorCatalog.ts`. O prompt está em `inputEvaluatorPrompt.ts` e os schemas Zod em `inputEvaluatorModel.ts`.
 
 Os casos partilhados pelos testes estão definidos diretamente em `inputEvaluatorTestUtils.ts`; não existe um fixture JSON separado.
 
