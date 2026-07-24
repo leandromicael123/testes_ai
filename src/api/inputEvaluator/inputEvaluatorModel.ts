@@ -95,7 +95,6 @@ export const ReasonCodeSchema = z.enum([
 	"EXPLICIT_COMMAND",
 	"CONTEXTUAL_COMMAND",
 	"AMBIGUOUS_INTENT",
-	"MISSING_REQUIRED_SLOT",
 	"MULTIPLE_INDEPENDENT_ACTIONS",
 	"UNSUPPORTED_OPERATION",
 	"CONVERSATIONAL_ONLY",
@@ -151,7 +150,6 @@ export const IntentRouterOutputSchema = z
 		target: IntentTargetSchema,
 		entities: z.array(IntentEntitySchema).max(30),
 		filters: z.array(IntentFilterSchema).max(20),
-		missing_slots: z.array(z.string().max(100)).max(10),
 		clarification: z
 			.object({
 				question: z.string().max(500).nullable(),
@@ -168,13 +166,6 @@ export const IntentRouterOutputSchema = z
 				code: z.ZodIssueCode.custom,
 				path: ["clarification", "question"],
 				message: "A clarification question is required when status is NEEDS_CLARIFICATION",
-			});
-		}
-		if (value.missing_slots.length > 0 && value.status !== "NEEDS_CLARIFICATION") {
-			context.addIssue({
-				code: z.ZodIssueCode.custom,
-				path: ["status"],
-				message: "Missing slots require NEEDS_CLARIFICATION status",
 			});
 		}
 		if (value.status === "OUT_OF_SCOPE" && value.intent.name !== "OUT_OF_SCOPE") {
@@ -252,7 +243,6 @@ export type IntentCatalog = z.infer<typeof IntentCatalogSchema>;
 export const AvailableIntentSchema = z
 	.object({
 		name: IntentNameSchema,
-		required_slots: z.array(z.string().max(100)),
 		examples: z.array(z.string().max(500)),
 	})
 	.strict();
