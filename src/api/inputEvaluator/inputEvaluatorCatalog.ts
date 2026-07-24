@@ -8,7 +8,6 @@ import {
 } from "@/api/inputEvaluator/inputEvaluatorModel";
 
 interface IntentDefinition {
-	required_slots: string[];
 	examples: string[];
 }
 
@@ -89,75 +88,36 @@ export const intentCatalog: IntentCatalog = IntentCatalogSchema.parse({
 });
 
 export const intentDefinitions: Record<IntentName, IntentDefinition> = {
-	NO_ACTION: { required_slots: [], examples: ["Olá", "Obrigado"] },
-	HELP: {
-		required_slots: [],
-		examples: ["O que posso fazer com o assistente?", "Ajuda-me a usar o edoclink"],
-	},
-	CANCEL_CURRENT_OPERATION: { required_slots: [], examples: ["Cancela a operação atual"] },
-	CONFIRM_PENDING_ACTION: { required_slots: [], examples: ["Sim", "Confirmo", "Avança"] },
-	REJECT_PENDING_ACTION: { required_slots: [], examples: ["Não", "Rejeita", "Não avances"] },
-	OPEN_DOCUMENT: {
-		required_slots: ["document_reference_or_context"],
-		examples: ["Abre o documento 2026/123"],
-	},
-	OPEN_FOLDER: { required_slots: ["folder_reference_or_context"], examples: ["Abre a pasta Contratos"] },
-	OPEN_FLOW: { required_slots: ["flow_reference_or_context"], examples: ["Abre o fluxo de aprovação"] },
-	OPEN_TASK: { required_slots: ["task_reference_or_context"], examples: ["Abre a tarefa atual"] },
-	SEARCH_GLOBAL: { required_slots: ["query"], examples: ["Pesquisa globalmente por ACME"] },
-	SEARCH_DOCUMENTS: { required_slots: ["query_or_filter"], examples: ["Procura faturas da ACME"] },
-	SEARCH_FOLDERS: { required_slots: ["query_or_filter"], examples: ["Procura pastas de contratos"] },
-	SEARCH_FLOWS: { required_slots: ["query_or_filter"], examples: ["Procura fluxos de aprovação"] },
-	SEARCH_TASKS: { required_slots: ["query_or_filter"], examples: ["Mostra as minhas tarefas pendentes"] },
-	LIST_ATTACHMENTS: {
-		required_slots: ["document_reference_or_context"],
-		examples: ["Mostra os anexos deste documento"],
-	},
-	VIEW_HISTORY: {
-		required_slots: ["object_reference_or_context"],
-		examples: ["Mostra o histórico deste documento"],
-	},
-	VIEW_VERSIONS: {
-		required_slots: ["document_reference_or_context"],
-		examples: ["Mostra as versões do documento"],
-	},
-	VIEW_RELATED_OBJECTS: {
-		required_slots: ["object_reference_or_context"],
-		examples: ["Mostra os objetos relacionados"],
-	},
-	READ_VISIBLE_CONTENT: { required_slots: [], examples: ["Lê o conteúdo visível"] },
-	CONTROL_READING: { required_slots: ["reading_control"], examples: ["Pausa a leitura", "Continua a ler"] },
-	SUMMARIZE_DOCUMENT: {
-		required_slots: ["document_reference_or_context"],
-		examples: ["Resume este documento"],
-	},
-	ASK_DOCUMENT: {
-		required_slots: ["question", "document_reference_or_context"],
-		examples: ["Qual é a data de validade deste contrato?"],
-	},
-	CREATE_DOCUMENT_DRAFT: {
-		required_slots: ["document_type"],
-		examples: ["Cria um documento do tipo Fatura"],
-	},
-	CREATE_FOLDER_DRAFT: { required_slots: ["title"], examples: ["Cria uma pasta chamada Contratos 2026"] },
-	SET_FIELD_VALUE: {
-		required_slots: ["field_name", "field_value"],
-		examples: ["Define o campo Estado como Aprovado"],
-	},
-	CLASSIFY_OBJECT: {
-		required_slots: ["classification", "object_reference_or_context"],
-		examples: ["Classifica este documento como Confidencial"],
-	},
-	SAVE_DRAFT: { required_slots: ["draft_reference_or_context"], examples: ["Guarda o rascunho"] },
-	RESUME_DRAFT: {
-		required_slots: ["draft_reference_or_context"],
-		examples: ["Continua o rascunho anterior"],
-	},
-	PREPARE_FLOW_ACTION: {
-		required_slots: ["flow_action", "object_reference_or_context"],
-		examples: ["Prepara a aprovação desta etapa"],
-	},
-	OUT_OF_SCOPE: { required_slots: [], examples: ["Qual é a previsão meteorológica?"] },
+	NO_ACTION: { examples: ["Olá", "Obrigado"] },
+	HELP: { examples: ["O que posso fazer com o assistente?", "Ajuda-me a usar o edoclink"] },
+	CANCEL_CURRENT_OPERATION: { examples: ["Cancela a operação atual"] },
+	CONFIRM_PENDING_ACTION: { examples: ["Sim", "Confirmo", "Avança"] },
+	REJECT_PENDING_ACTION: { examples: ["Não", "Rejeita", "Não avances"] },
+	OPEN_DOCUMENT: { examples: ["Abre o documento 2026/123"] },
+	OPEN_FOLDER: { examples: ["Abre a pasta Contratos"] },
+	OPEN_FLOW: { examples: ["Abre o fluxo de aprovação"] },
+	OPEN_TASK: { examples: ["Abre a tarefa atual"] },
+	SEARCH_GLOBAL: { examples: ["Pesquisa globalmente por ACME"] },
+	SEARCH_DOCUMENTS: { examples: ["Procura faturas da ACME"] },
+	SEARCH_FOLDERS: { examples: ["Procura pastas de contratos"] },
+	SEARCH_FLOWS: { examples: ["Procura fluxos de aprovação"] },
+	SEARCH_TASKS: { examples: ["Mostra as minhas tarefas pendentes"] },
+	LIST_ATTACHMENTS: { examples: ["Mostra os anexos deste documento"] },
+	VIEW_HISTORY: { examples: ["Mostra o histórico deste documento"] },
+	VIEW_VERSIONS: { examples: ["Mostra as versões do documento"] },
+	VIEW_RELATED_OBJECTS: { examples: ["Mostra os objetos relacionados"] },
+	READ_VISIBLE_CONTENT: { examples: ["Lê o conteúdo visível"] },
+	CONTROL_READING: { examples: ["Pausa a leitura", "Continua a ler"] },
+	SUMMARIZE_DOCUMENT: { examples: ["Resume este documento"] },
+	ASK_DOCUMENT: { examples: ["Qual é a data de validade deste contrato?"] },
+	CREATE_DOCUMENT_DRAFT: { examples: ["Cria um documento do tipo Fatura"] },
+	CREATE_FOLDER_DRAFT: { examples: ["Cria uma pasta chamada Contratos 2026"] },
+	SET_FIELD_VALUE: { examples: ["Define o campo Estado como Aprovado"] },
+	CLASSIFY_OBJECT: { examples: ["Classifica este documento como Confidencial"] },
+	SAVE_DRAFT: { examples: ["Guarda o rascunho"] },
+	RESUME_DRAFT: { examples: ["Continua o rascunho anterior"] },
+	PREPARE_FLOW_ACTION: { examples: ["Prepara a aprovação desta etapa"] },
+	OUT_OF_SCOPE: { examples: ["Qual é a previsão meteorológica?"] },
 };
 
 const catalogIndex = new Map<IntentName, CatalogIntent>(
@@ -177,7 +137,6 @@ export function buildAvailableIntents() {
 		const definition = intentDefinitions[intent.name];
 		return AvailableIntentSchema.parse({
 			name: IntentNameSchema.parse(intent.name),
-			required_slots: definition.required_slots,
 			examples: definition.examples,
 		});
 	});
