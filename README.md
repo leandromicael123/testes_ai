@@ -14,7 +14,6 @@ src/api/inputEvaluator/
 ├── inputEvaluatorRouter.ts
 ├── inputEvaluatorService.ts
 └── __tests__/
-    ├── inputEvaluatorCases.json
     ├── inputEvaluatorCases.test.ts
     ├── inputEvaluatorCatalog.test.ts
     ├── inputEvaluatorClassification.live.test.ts
@@ -28,6 +27,8 @@ src/api/inputEvaluator/
 ```
 
 O catálogo e os `required_slots` estão em `inputEvaluatorCatalog.ts`. O prompt está em `inputEvaluatorPrompt.ts` e os schemas Zod em `inputEvaluatorModel.ts`.
+
+Os casos partilhados pelos testes estão definidos diretamente em `inputEvaluatorTestUtils.ts`; não existe um fixture JSON separado.
 
 ## Testes determinísticos
 
