@@ -1,4 +1,4 @@
-import cases from "@/api/inputEvaluator/__tests__/fixtures/inputEvaluatorCases.json";
+import cases from "@/api/inputEvaluator/__tests__/inputEvaluatorCases.json";
 import type {
 	InputEvaluatorRequest,
 	IntentName,
