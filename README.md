@@ -16,6 +16,25 @@ Principais alterações:
 
 `feature/edoclink-intent-router`
 
+## Estrutura dos testes
+
+A estrutura segue o padrão existente no ZIP do `edoclink-ai`: todos os testes e respetivos auxiliares estão diretamente em `src/api/inputEvaluator/__tests__/`.
+
+```text
+src/api/inputEvaluator/__tests__/
+├── inputEvaluatorCases.json
+├── inputEvaluatorCases.test.ts
+├── inputEvaluatorCatalog.test.ts
+├── inputEvaluatorClassification.live.test.ts
+├── inputEvaluatorController.test.ts
+├── inputEvaluatorEndpoint.e2e.test.ts
+├── inputEvaluatorModel.test.ts
+├── inputEvaluatorPromptContract.test.ts
+├── inputEvaluatorRepository.test.ts
+├── inputEvaluatorService.test.ts
+└── inputEvaluatorTestUtils.ts
+```
+
 ## Testes determinísticos
 
 ```powershell
