@@ -1,20 +1,53 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+	inputEvaluatorCases,
+	makeOutputForCase,
+	makeRequest,
+} from "@/api/inputEvaluator/__tests__/inputEvaluatorTestUtils";
 import { intentCatalog } from "@/api/inputEvaluator/inputEvaluatorCatalog";
 import { InputEvaluatorRepository } from "@/api/inputEvaluator/inputEvaluatorRepository";
-import { inputEvaluatorCases, makeOutput, makeRequest } from "@/api/inputEvaluator/__tests__/inputEvaluatorTestUtils";
+
+const mockInvoke = vi.fn();
+const fakeModel = {
+	invoke: mockInvoke,
+};
 
 describe("InputEvaluatorRepository", () => {
-	it("injects the server-side catalog and parses a strict JSON response", async () => {
-		const output = makeOutput();
-		const model = {
-			invoke: vi.fn().mockResolvedValue({ content: JSON.stringify(output) }),
-		};
-		const repository = new InputEvaluatorRepository(model as any);
-		const result = await repository.evaluate(makeRequest(inputEvaluatorCases[0]));
-		expect(result).toEqual(output);
+	let repository: InputEvaluatorRepository;
 
-		const messages = model.invoke.mock.calls[0][0];
+	beforeEach(() => {
+		mockInvoke.mockReset();
+		repository = new InputEvaluatorRepository(fakeModel as any);
+	});
+
+	it.each(inputEvaluatorCases.map((testCase) => [testCase.id, testCase] as const))(
+		"parses a strict JSON result for case %s",
+		async (_id, testCase) => {
+			// Arrange
+			const request = makeRequest(testCase);
+			const expectedPayload = makeOutputForCase(testCase);
+			mockInvoke.mockResolvedValue({ content: JSON.stringify(expectedPayload) });
+
+			// Act
+			const actual = await repository.evaluate(request);
+
+			// Assert
+			expect(mockInvoke).toHaveBeenCalledTimes(1);
+			expect(actual).toEqual(expectedPayload);
+		},
+	);
+
+	it("injects the server-side catalog into the model payload", async () => {
+		// Arrange
+		const testCase = inputEvaluatorCases[0];
+		mockInvoke.mockResolvedValue({ content: JSON.stringify(makeOutputForCase(testCase)) });
+
+		// Act
+		await repository.evaluate(makeRequest(testCase));
+
+		// Assert
+		const messages = mockInvoke.mock.calls[0][0];
 		const humanMessage = messages[1];
 		const content = String(humanMessage.content);
 		expect(content).toContain(`"catalog_version": "${intentCatalog.catalog_version}"`);
@@ -24,33 +57,44 @@ describe("InputEvaluatorRepository", () => {
 	});
 
 	it("rejects a response with a different catalog version", async () => {
-		const model = {
-			invoke: vi.fn().mockResolvedValue({
-				content: JSON.stringify(makeOutput({ catalog_version: "outdated" })),
+		// Arrange
+		const testCase = inputEvaluatorCases[0];
+		mockInvoke.mockResolvedValue({
+			content: JSON.stringify({
+				...makeOutputForCase(testCase),
+				catalog_version: "outdated",
 			}),
-		};
-		const repository = new InputEvaluatorRepository(model as any);
-		await expect(repository.evaluate(makeRequest(inputEvaluatorCases[0]))).rejects.toThrow(/catalog version/i);
+		});
+
+		// Act + Assert
+		await expect(repository.evaluate(makeRequest(testCase))).rejects.toThrow(/catalog version/i);
 	});
 
-	it("rejects extra policy and executor properties returned by the model", async () => {
-		const model = {
-			invoke: vi.fn().mockResolvedValue({
-				content: JSON.stringify({
-					...makeOutput(),
-					risk: "C",
-					confirmation: "visual_required",
-					executor: "edoc.documents.prepareCreate",
-				}),
+	it.each([
+		["riskLevel", "MEDIUM"],
+		["requiresConfirmation", true],
+		["targetHandler", "documentCreate"],
+		["explanation", "O utilizador pediu uma ação."],
+		["missingFields", ["fileName"]],
+	])("rejects backend-only property %s returned by the model", async (property, value) => {
+		// Arrange
+		const testCase = inputEvaluatorCases[0];
+		mockInvoke.mockResolvedValue({
+			content: JSON.stringify({
+				...makeOutputForCase(testCase),
+				[property]: value,
 			}),
-		};
-		const repository = new InputEvaluatorRepository(model as any);
-		await expect(repository.evaluate(makeRequest(inputEvaluatorCases[0]))).rejects.toThrow();
+		});
+
+		// Act + Assert
+		await expect(repository.evaluate(makeRequest(testCase))).rejects.toThrow();
 	});
 
 	it("rejects non-JSON model output", async () => {
-		const model = { invoke: vi.fn().mockResolvedValue({ content: "I think this is a search." }) };
-		const repository = new InputEvaluatorRepository(model as any);
+		// Arrange
+		mockInvoke.mockResolvedValue({ content: "I think this is a search." });
+
+		// Act + Assert
 		await expect(repository.evaluate(makeRequest(inputEvaluatorCases[0]))).rejects.toThrow();
 	});
 });
