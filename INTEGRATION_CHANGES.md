@@ -4,6 +4,13 @@
 
 Copiar `src/api/inputEvaluator` para o projeto `edoclink-ai`, mantendo exatamente o nome camelCase `inputEvaluator`.
 
+O módulo segue uma estrutura plana. Não é necessário criar uma pasta `config`:
+
+- catálogo e definições: `inputEvaluatorCatalog.ts`;
+- prompt de produção: `inputEvaluatorPrompt.ts`;
+- schemas Zod e tipos: `inputEvaluatorModel.ts`;
+- casos de teste: `__tests__/inputEvaluatorCases.json`.
+
 ## 2. Registar a rota
 
 Em `src/server.ts`:
@@ -42,7 +49,7 @@ O modelo devolve apenas a classificação linguística definida no schema:
 - reason code;
 - indicação de possível prompt injection.
 
-O backend consulta `intent_catalog_edoclink.json` para obter:
+O backend consulta `intentCatalog` em `inputEvaluatorCatalog.ts` para obter:
 
 - risco;
 - política de confirmação;
