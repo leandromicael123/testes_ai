@@ -78,8 +78,12 @@ function resolveObjectType(intentName: IntentName): ObjectType {
 export function makeOutputForCase(testCase: InputEvaluatorCase): IntentRouterOutput {
 	const status = testCase.expected.statuses[0];
 	const intentName = resolveIntentName(testCase, status);
+	const reasonCode =
+		status === "NEEDS_CLARIFICATION" && testCase.expected.reason_codes.includes("MISSING_REQUIRED_SLOT")
+			? "MISSING_REQUIRED_SLOT"
+			: testCase.expected.reason_codes[0];
 	const needsClarification = status === "NEEDS_CLARIFICATION";
-	const hasMissingSlot = testCase.expected.reason_codes.includes("MISSING_REQUIRED_SLOT");
+	const hasMissingSlot = reasonCode === "MISSING_REQUIRED_SLOT";
 
 	return makeOutput({
 		status,
@@ -102,7 +106,7 @@ export function makeOutputForCase(testCase: InputEvaluatorCase): IntentRouterOut
 					question: null,
 					options: [],
 				},
-		reason_code: testCase.expected.reason_codes[0],
+		reason_code: reasonCode,
 		suspected_prompt_injection: testCase.expected.injection,
 	});
 }
